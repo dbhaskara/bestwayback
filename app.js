@@ -19,6 +19,10 @@ function myMap() {
   infoWindow = new google.maps.InfoWindow;
   directionsDisplay.setMap(map);
 
+  var endHere = document.getElementById("dest").value;
+  console.log(endHere);
+  console.log("hello");
+
   //find location
   if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
@@ -32,7 +36,8 @@ function myMap() {
             infoWindow.setPosition(pos);
             infoWindow.setContent('Current Location Found.');
             
-            var endHere = "Crozet, VA";
+            //var endHere = document.getElementById("dest");
+            //console.log(endHere);//"Crozet, VA";
             calculateAndDisplayRoute(directionsService, directionsDisplay, "" + lat + ", " + lng, endHere);
             
             infoWindow.open(map);
