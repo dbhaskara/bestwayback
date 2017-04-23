@@ -66,7 +66,6 @@ function placeMarker(map, location) {
         markers[i].setMap(null);
     }
 
-
   var danger = getPointSafety({
     "lat" : location.lat(),
     "lng" : location.lng()
@@ -75,15 +74,15 @@ function placeMarker(map, location) {
   var dangerString = "";
   var markerString = "";
   if (danger < 10) { 
-    dangerString = "<b><br>Danger: " + "<p style='color:green;'>" + danger + "</p></b>";
+    dangerString = "<b><br><br>Risk: " + "<p style='color:green;'>" + danger + "</p></b>";
     markerString = "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
   }
   else if (danger < 60) {
-    dangerString = "<b><br>Danger: " + "<p style='color:yellow;'>" + danger + "</p></b>";
+    dangerString = "<b><br>Risk: " + "<p style='color:yellow;'>" + danger + "</p></b>";
     markerString = "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
   }
   else {
-    dangerString = "<b><br>Danger: " + "<p style='color:red;'>" + danger + "</p></b>";
+    dangerString = "<b><br>Risk: " + "<p style='color:red;'>" + danger + "</p></b>";
     markerString = "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
   }
   var marker = new google.maps.Marker({
@@ -93,7 +92,9 @@ function placeMarker(map, location) {
   });
   markers.push(marker);
   var infowindow = new google.maps.InfoWindow({
+    maxWidth: 200,
     content: 'Latitude: ' + location.lat() + '<br>Longitude: ' + location.lng() + dangerString 
+    
   });
   infowindow.open(map,marker);
 }
