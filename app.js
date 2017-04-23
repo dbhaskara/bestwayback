@@ -40,7 +40,6 @@ function myMap() {
             infoWindow.setContent('Current Location Found.');
             
             //var endHere = document.getElementById("dest");
-            //console.log(endHere);//"Crozet, VA";
             calculateAndDisplayRoute(directionsService, directionsDisplay, "" + lat + ", " + lng, endHere);
             
             infoWindow.open(map);
@@ -76,7 +75,6 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, start, e
           provideRouteAlternatives: true
         }, function(response, status) {
           if (status === 'OK') {
-            console.log("it worked");
 
             for(var i = 0; i < response.routes.length; i++) {
               new google.maps.DirectionsRenderer({
@@ -84,12 +82,8 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, start, e
                 directions: response,
                 routeIndex: i
               });
-              if(i == 0) {
-              getRouteSafety(response.routes[i]);
-              }
-              //directionsDisplay.setDirections(response);
+              console.log(getRouteSafety(response.routes[i]));
             }
-            //directionsDisplay.setDirections(response);
           } else {
             window.alert('Directions request failed due to ' + status);
           }
@@ -97,11 +91,17 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, start, e
 }
 
 function getRouteSafety(routeArray) {
-  console.log(routeArray);
-  for(var i = 0; i < routeArray.overview_path.length; i++) {
-    console.log(routeArray.overview_path[i].lat() + " " + routeArray.overview_path[i].lng());
+  var rating = 0.0;
+  for(var i = 0; i < routeArray.overview_path.length; i+=3) {
+    var destination = {
+      "lat" :  routeArray.overview_path[i].lat(),
+      "lng" :  routeArray.overview_path[i].lng()
+    } 
+    rating += getPointSafety(destination);
   }
-
+  rating = rating / routeArray.overview_path.length;
+  rating = rating * routeArray.legs[0].distance.value;
+  return rating;
 }
 
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
@@ -111,32 +111,6 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
                         'Error: Your browser doesn\'t support geolocation.');
   infoWindow.open(map);
 }   
-
-function test() {
-  var Tom = {
-    "name": "Tom"
-  }
-  $.ajax({ 
-    type: 'POST', 
-    url: 'https://best-way-back.firebaseio.com/users.json', 
-    data: JSON.stringify(Tom), 
-    dataType: 'json',
-    success: function () { 
-      console.log("It worked");
-    }
-  });
-  $.ajax({ 
-    type: 'GET', 
-    url: 'https://best-way-back.firebaseio.com/users.json', 
-    dataType: 'json',
-    success: function (users) { 
-      $.each(users, function(user) {
-        console.log(user);
-      });
-      console.log("It worked");
-    }
-  });
-}
 
 function getCrimes() {
   $.ajax({ 
@@ -150,11 +124,26 @@ function getCrimes() {
   });
 }
 
-function pointSafety(point) { // expect LatLong value
+function getPointSafety(point) { // expect LatLong value
   var rating = 0.0;
-  var pLat = pos['lat']; 
-  var pLng = pos['lng'];
-  for (var i = 0; i < Object.keys(crimes).length; i++) {
+  var pLat = point['lat']; 
+  var pLng = point['lng'];
+
+  // data is initially sorted by longitude value
+  var i = findStartIndex(pLng - .023);
+  for ( ; i < Object.keys(crimes).length && crimes[Object.keys(crimes)[i]].longitude < pLng + 0.023 ; i++) {
+    var lat2 = crimes[Object.keys(crimes)[i]].latitude;  
+    if (Math.abs(lat2 - pLat) < 0.023) {
+      var d = distance(pLat, pLng, lat2, crimes[Object.keys(crimes)[i]].longitude)
+      if (d < .04) {
+        d = 0.4; // all distances within .04 count the same
+      }
+      rating += 1/d;
+    }
+  }
+
+// Brute force algorithm:
+/*  for (var i = 0; i < Object.keys(crimes).length; i++) {
     var crime = crimes[Object.keys(crimes)[i]];
     var d = distance(pLat, pLng, crime['latitude'], crime['longitude']);    
     if (d < 2.0) {
@@ -163,8 +152,24 @@ function pointSafety(point) { // expect LatLong value
       }
       rating += d;
     }
-  }
+  }*/
   return rating;
+}
+
+//binary search, takes in lattitude, and returns the start index of data that should be used
+function findStartIndex(l) {
+  var keys = Object.keys(crimes);
+  var high = keys.length - 1;
+  var low = 0
+  while (low < high) {
+    var mid = Math.floor((low + high) / 2);
+    if (crimes[keys[mid]].longitude < l) {
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  return mid;
 }
 
 // Returns difference in location (miles)
