@@ -1,5 +1,7 @@
 var imported = document.createElement('script');
+
 imported.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyATStvJFHPadqlOozhMkFTykKpMSdpzlns';
+
 document.head.appendChild(imported);
 
 var pos = {};
@@ -14,8 +16,14 @@ function myMap() {
   var myCenter=new google.maps.LatLng(38.02768,-78.48915);
   var mapOptions = {center: myCenter, zoom: 20};
   var map = new google.maps.Map(mapCanvas, mapOptions);
+
+  var lat = "";
+  var lng = "";
+
   infoWindow = new google.maps.InfoWindow;
   directionsDisplay.setMap(map);
+
+  var endHere = document.getElementById("dest").value;
 
   //find location
   if (navigator.geolocation) {
@@ -25,8 +33,15 @@ function myMap() {
               lng: position.coords.longitude
             };
 
+            lat = position.coords.latitude;
+            lng = position.coords.longitude;
             infoWindow.setPosition(pos);
             infoWindow.setContent('Current Location Found.');
+            
+            //var endHere = document.getElementById("dest");
+            //console.log(endHere);//"Crozet, VA";
+            calculateAndDisplayRoute(directionsService, directionsDisplay, "" + lat + ", " + lng, endHere);
+            
             infoWindow.open(map);
             map.setCenter(pos);
           }, function() {
@@ -37,10 +52,7 @@ function myMap() {
     handleLocationError(false, infoWindow, map.getCenter());
   }
   //var testDest=new google.maps.LatLng(38.02768,-78.48915);
-  var startHere = "Charlottesville, VA";
-  var endHere = "Crozet, VA";
-
-  calculateAndDisplayRoute(directionsService, directionsDisplay, startHere, endHere);
+  //calculateAndDisplayRoute(directionsService, directionsDisplay, startHere, endHere);
   //findPath(pos, testDest);
 }
 
@@ -118,10 +130,30 @@ function getCrimes() {
 
 function pointSafety(point) { // expect LatLong value
   var rating = 0.0;
-  var pLat 
-  var pLng
+  var pLat = pos['lat']; 
+  var pLng = pos['lng'];
   for (var i = 0; i < Object.keys(crimes).length; i++) {
-    crimes[Object.keys(crimes)[i]];
+    var crime = crimes[Object.keys(crimes)[i]];
+    var d = distance(pLat, pLng, crime['latitude'], crime['longitude']);    
+    if (d < 2.0) {
+      if (d < 0.4) {
+        d = 0.4 // All distances within 200 ft of a crime count the same.
+      }
+      rating += d;
+    }
   }
+  return rating;
 }
 
+// Returns difference in location (miles)
+function distance(lat1, lon1, lat2, lon2) {
+	var radlat1 = Math.PI * lat1/180;
+	var radlat2 = Math.PI * lat2/180;
+	var theta = lon1-lon2;
+	var radtheta = Math.PI * theta/180;
+	var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+	dist = Math.acos(dist);
+	dist = dist * 180/Math.PI;
+	dist = dist * 60 * 1.1515;
+	return dist;
+}
