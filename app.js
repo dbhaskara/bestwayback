@@ -3,6 +3,8 @@ imported.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyATStvJFHPadqlO
 document.head.appendChild(imported);
 
 var pos = {};
+var crimes = {};
+getCrimes();
 
 function myMap() {
   var directionsService = new google.maps.DirectionsService;
@@ -100,5 +102,26 @@ function test() {
       console.log("It worked");
     }
   });
+}
+
+function getCrimes() {
+  $.ajax({ 
+    type: 'GET', 
+    url: 'https://best-way-back.firebaseio.com/crimes.json', 
+    dataType: 'json',
+    success: function (data) { 
+      console.log("Data pulled successfully");
+      crimes = data;
+    }
+  });
+}
+
+function pointSafety(point) { // expect LatLong value
+  var rating = 0.0;
+  var pLat 
+  var pLng
+  for (var i = 0; i < Object.keys(crimes).length; i++) {
+    crimes[Object.keys(crimes)[i]];
+  }
 }
 
