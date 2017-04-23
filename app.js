@@ -80,7 +80,7 @@ function placeMarker(map, location) {
     markerString = "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
   }
   else if (danger < 60) {
-    dangerString = "<b><br>Danger: " + "<p style='color:yellow;'>" + danger + "</p></b>";
+    dangerString = "<b><br>Danger: " + "<p style='color:orange;'>" + danger + "</p></b>";
     markerString = "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
   }
   else {
