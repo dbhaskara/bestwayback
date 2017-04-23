@@ -5,6 +5,8 @@ imported.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyATStvJFHPadqlO
 document.head.appendChild(imported);
 
 var pos = {};
+var crimes = {};
+getCrimes();
 var map = {};
 
 function myMap() {
@@ -23,8 +25,6 @@ function myMap() {
   directionsDisplay.setMap(map);
 
   var endHere = document.getElementById("dest").value;
-  console.log(endHere);
-  console.log("hello");
 
   //find location
   if (navigator.geolocation) {
@@ -138,4 +138,44 @@ function test() {
   });
 }
 
+function getCrimes() {
+  $.ajax({ 
+    type: 'GET', 
+    url: 'https://best-way-back.firebaseio.com/crimes.json', 
+    dataType: 'json',
+    success: function (data) { 
+      console.log("Data pulled successfully");
+      crimes = data;
+    }
+  });
+}
 
+function pointSafety(point) { // expect LatLong value
+  var rating = 0.0;
+  var pLat = pos['lat']; 
+  var pLng = pos['lng'];
+  for (var i = 0; i < Object.keys(crimes).length; i++) {
+    var crime = crimes[Object.keys(crimes)[i]];
+    var d = distance(pLat, pLng, crime['latitude'], crime['longitude']);    
+    if (d < 2.0) {
+      if (d < 0.4) {
+        d = 0.4 // All distances within 200 ft of a crime count the same.
+      }
+      rating += d;
+    }
+  }
+  return rating;
+}
+
+// Returns difference in location (miles)
+function distance(lat1, lon1, lat2, lon2) {
+	var radlat1 = Math.PI * lat1/180;
+	var radlat2 = Math.PI * lat2/180;
+	var theta = lon1-lon2;
+	var radtheta = Math.PI * theta/180;
+	var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+	dist = Math.acos(dist);
+	dist = dist * 180/Math.PI;
+	dist = dist * 60 * 1.1515;
+	return dist;
+}
