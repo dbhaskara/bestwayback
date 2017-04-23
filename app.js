@@ -8,6 +8,7 @@ var pos = {};
 var crimes = {};
 getCrimes();
 var map = {};
+var markers = [];
 
 function myMap() {
   var directionsService = new google.maps.DirectionsService;
@@ -61,25 +62,36 @@ function myMap() {
 }
 
 function placeMarker(map, location) {
+  for(var i=0; i<markers.length; i++){
+        markers[i].setMap(null);
+    }
+
+
   var danger = getPointSafety({
     "lat" : location.lat(),
     "lng" : location.lng()
   });
   danger = Math.floor(danger);
   var dangerString = "";
+  var markerString = "";
   if (danger < 10) { 
-    dangerString = '<br>Danger: ' + danger;
+    dangerString = "<b><br>Danger: " + "<p style='color:green;'>" + danger + "</p></b>";
+    markerString = "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
   }
   else if (danger < 60) {
-    dangerString = '<br>Danger: ' + danger;
+    dangerString = "<b><br>Danger: " + "<p style='color:yellow;'>" + danger + "</p></b>";
+    markerString = "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
   }
   else {
-    dangerString = '<br>Danger: ' + danger;
+    dangerString = "<b><br>Danger: " + "<p style='color:red;'>" + danger + "</p></b>";
+    markerString = "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
   }
   var marker = new google.maps.Marker({
     position: location,
-    map: map
+    map: map,
+    icon: markerString
   });
+  markers.push(marker);
   var infowindow = new google.maps.InfoWindow({
     content: 'Latitude: ' + location.lat() + '<br>Longitude: ' + location.lng() + dangerString 
   });
