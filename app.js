@@ -5,6 +5,7 @@ imported.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyATStvJFHPadqlO
 document.head.appendChild(imported);
 
 var pos = {};
+var map = {};
 
 function myMap() {
   var directionsService = new google.maps.DirectionsService;
@@ -13,7 +14,7 @@ function myMap() {
   var mapCanvas = document.getElementById("map");
   var myCenter=new google.maps.LatLng(38.02768,-78.48915);
   var mapOptions = {center: myCenter, zoom: 20};
-  var map = new google.maps.Map(mapCanvas, mapOptions);
+  map = new google.maps.Map(mapCanvas, mapOptions);
 
   var lat = "";
   var lng = "";
@@ -71,11 +72,21 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, start, e
         directionsService.route({
           origin: start,
           destination: end,
-          travelMode: 'WALKING'
+          travelMode: 'WALKING',
+          provideRouteAlternatives: true
         }, function(response, status) {
           if (status === 'OK') {
             console.log("it worked");
-            directionsDisplay.setDirections(response);
+
+            for(var i = 0; i < response.routes.length; i++) {
+              new google.maps.DirectionsRenderer({
+                map: map,
+                directions: response,
+                routeIndex: i
+              });
+              //directionsDisplay.setDirections(response);
+            }
+            //directionsDisplay.setDirections(response);
           } else {
             window.alert('Directions request failed due to ' + status);
           }
