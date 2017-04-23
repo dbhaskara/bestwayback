@@ -25,7 +25,11 @@ function myMap() {
   directionsDisplay.setMap(map);
 
   var endHere = document.getElementById("dest").value;
-
+  
+  google.maps.event.addListener(map, 'click', function(event) {
+    placeMarker(map, event.latLng);
+  });
+  
   //find location
   if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
@@ -57,12 +61,27 @@ function myMap() {
 }
 
 function placeMarker(map, location) {
+  var danger = getPointSafety({
+    "lat" : location.lat(),
+    "lng" : location.lng()
+  });
+  danger = Math.floor(danger);
+  var dangerString = "";
+  if (danger < 10) { 
+    dangerString = '<br>Danger: ' + danger;
+  }
+  else if (danger < 60) {
+    dangerString = '<br>Danger: ' + danger;
+  }
+  else {
+    dangerString = '<br>Danger: ' + danger;
+  }
   var marker = new google.maps.Marker({
     position: location,
     map: map
   });
   var infowindow = new google.maps.InfoWindow({
-    content: 'Latitude: ' + location.lat() + '<br>Longitude: ' + location.lng()
+    content: 'Latitude: ' + location.lat() + '<br>Longitude: ' + location.lng() + dangerString 
   });
   infowindow.open(map,marker);
 }
