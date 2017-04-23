@@ -21,22 +21,36 @@ db = firebase.database()
 with open('crimes.json') as data_file:    
     data = json.load(data_file)
 
-print('Adding ' + str(len(data)) + 'crime incidents to database...')
+count = 0
+loc_data = []
+#remove all data points without locations
+for d in data:
+	if ('location' in d.keys()):
+		loc_data.append(d)
+		count += 1
 
-for crime in data:
-	crime = data[0]
+#Sort the data on the longitudinal value of the location
+loc_data = sorted(loc_data, key=lambda k: k['location']['latitude'])
 
-	entry = {'date': crime['date'], 
-		'primary_type': crime['primary_type'], 
-		'arrest': crime['arrest'],
-		'year': crime['year'],
-		'description': crime['description'],
-		'location_description' : crime['location_description'],
-		'district': crime['district'],
-		'longitude': crime['location']['longitude'], 
-		'latitude': crime['location']['latitude']
-		}
+print('Adding ' + str(count) + ' crime incidents to database...')
 
-	db.child("users").push(entry)
+
+for crime in loc_data:
+
+		entry = {'date': crime['date'], 
+			'primary_type': crime['primary_type'], 
+			'arrest': crime['arrest'],
+			'year': crime['year'],
+			'description': crime['description'],
+			'district': crime['district'],
+			'longitude': crime['location']['longitude'], 
+			'latitude': crime['location']['latitude']
+			}
+
+		db.child("crimes").push(entry)
+		
+
+print('Added!')
+	
 
 
