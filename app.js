@@ -84,6 +84,9 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, start, e
                 directions: response,
                 routeIndex: i
               });
+              if(i == 0) {
+              getRouteSafety(response.routes[i]);
+              }
               //directionsDisplay.setDirections(response);
             }
             //directionsDisplay.setDirections(response);
@@ -91,6 +94,14 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, start, e
             window.alert('Directions request failed due to ' + status);
           }
    });
+}
+
+function getRouteSafety(routeArray) {
+  console.log(routeArray);
+  for(var i = 0; i < routeArray.overview_path.length; i++) {
+    console.log(routeArray.overview_path[i].lat() + " " + routeArray.overview_path[i].lng());
+  }
+
 }
 
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
