@@ -1,5 +1,9 @@
 var imported = document.createElement('script');
 imported.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyATStvJFHPadqlOozhMkFTykKpMSdpzlns&callback=myMap';
+
+// var crimedata = document.createElement('script');
+// crimedata.src = 'crimes.json'
+
 document.head.appendChild(imported);
 
 function myMap() {
@@ -48,4 +52,5 @@ function test() {
     }
   });
 }
+
 
