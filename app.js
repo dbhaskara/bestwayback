@@ -134,7 +134,7 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, start, e
               var blue = '00';
               if (safety <= 2000) { // default color is most dangerous
                 if (safety >= 1000) {
-                  var redNumber = Math.floor(265*(safety-1000)/1000);
+                  var redNumber = Math.floor(255*(safety-1000)/1000);
                   var greenNumber = 128 + Math.floor(37*(safety-1000)/1000);
                   red = '' + redNumber.toString(16); // convert to hex
                   green = '' + greenNumber.toString(16); // convert to hex
