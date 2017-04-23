@@ -2,22 +2,23 @@ var imported = document.createElement('script');
 imported.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyATStvJFHPadqlOozhMkFTykKpMSdpzlns';
 document.head.appendChild(imported);
 
+var lat = "";
+var lon = "";
+var startAddr = "";
 var pos = {};
-
+var map = {};
+//myMap();
+$( document ).ready(myMap);
 function myMap() {
-  var directionsService = new google.maps.DirectionsService;
-  var directionsDisplay = new google.maps.DirectionsRenderer;
+  //var directionsService = new google.maps.DirectionsService;
+  //var directionsDisplay = new google.maps.DirectionsRenderer;
 
   var mapCanvas = document.getElementById("map");
   var myCenter=new google.maps.LatLng(38.02768,-78.48915);
   var mapOptions = {center: myCenter, zoom: 20};
   var map = new google.maps.Map(mapCanvas, mapOptions);
-
-  var lat = "";
-  var lng = "";
-
   infoWindow = new google.maps.InfoWindow;
-  directionsDisplay.setMap(map);
+  //directionsDisplay.setMap(map);
 
   //find location
   if (navigator.geolocation) {
@@ -26,15 +27,11 @@ function myMap() {
               lat: position.coords.latitude,
               lng: position.coords.longitude
             };
-
             lat = position.coords.latitude;
-            lng = position.coords.longitude;
+            lon = position.coords.longitude;
+
             infoWindow.setPosition(pos);
             infoWindow.setContent('Current Location Found.');
-            
-            var endHere = "Crozet, VA";
-            calculateAndDisplayRoute(directionsService, directionsDisplay, "" + lat + ", " + lng, endHere);
-            
             infoWindow.open(map);
             map.setCenter(pos);
           }, function() {
@@ -44,9 +41,21 @@ function myMap() {
     // Browser doesn't support Geolocation
     handleLocationError(false, infoWindow, map.getCenter());
   }
-  //var testDest=new google.maps.LatLng(38.02768,-78.48915);
+
+
+  startAddr = "" + lat + ", " + lon;
+
   //calculateAndDisplayRoute(directionsService, directionsDisplay, startHere, endHere);
   //findPath(pos, testDest);
+}
+
+function calcRoutes() {
+  var directionsService = new google.maps.DirectionsService;
+  var directionsDisplay = new google.maps.DirectionsRenderer;
+  directionsDisplay.setMap(map);
+  //get endAddr from getelementbyId
+  var endHere = "Crozet, VA";
+  calculateAndDisplayRoute(directionsService, directionsDisplay, new google.maps.LatLng(38.02768,-78.48915), endHere);
 }
 
 function placeMarker(map, location) {
