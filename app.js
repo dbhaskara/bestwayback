@@ -1,5 +1,7 @@
 var imported = document.createElement('script');
+
 imported.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyATStvJFHPadqlOozhMkFTykKpMSdpzlns';
+
 document.head.appendChild(imported);
 
 var pos = {};
@@ -113,4 +115,5 @@ function test() {
     }
   });
 }
+
 
