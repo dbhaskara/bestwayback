@@ -9,6 +9,7 @@ var crimes = {};
 getCrimes();
 var map = {};
 
+
 function myMap() {
   var directionsService = new google.maps.DirectionsService;
   var directionsDisplay = new google.maps.DirectionsRenderer;
@@ -67,6 +68,25 @@ function placeMarker(map, location) {
   infowindow.open(map,marker);
 }
 
+function dangerMarker(map, location, safety) {
+  var marker = new google.maps.Marker({
+    position: location,
+    map: map
+  });
+  var infowindow = new google.maps.InfoWindow({
+    content: '<br>Danger: ' + Math.floor(safety/100)
+  });
+  if(Math.floor(safety) < 1000) {
+    marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png')
+  } else if (Math.floor(safety) < 2000 && Math.floor(safety) > 1000) {
+    marker.setIcon('http://maps.google.com/mapfiles/ms/icons/yellow-dot.png')
+  } else {
+    marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png')
+  }
+  infowindow.open(map,marker);
+}
+
+
 function calculateAndDisplayRoute(directionsService, directionsDisplay, start, end) {
         directionsService.route({
           origin: start,
@@ -83,6 +103,7 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, start, e
                 routeIndex: i
               });
               console.log(getRouteSafety(response.routes[i]));
+              dangerMarker(map,response.routes[i].overview_path[20], getRouteSafety(response.routes[i]));
             }
           } else {
             window.alert('Directions request failed due to ' + status);
