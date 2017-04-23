@@ -24,6 +24,28 @@ function placeMarker(map, location) {
 }
 
 function test() {
-  console.log("Is the file linked?");
+  var Tom = {
+    "name": "Tom"
+  }
+  $.ajax({ 
+    type: 'POST', 
+    url: 'https://best-way-back.firebaseio.com/users.json', 
+    data: JSON.stringify(Tom), 
+    dataType: 'json',
+    success: function () { 
+      console.log("It worked");
+    }
+  });
+  $.ajax({ 
+    type: 'GET', 
+    url: 'https://best-way-back.firebaseio.com/users.json', 
+    dataType: 'json',
+    success: function (users) { 
+      $.each(users, function(user) {
+        console.log(user);
+      });
+      console.log("It worked");
+    }
+  });
 }
 
