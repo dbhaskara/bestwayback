@@ -7,6 +7,7 @@ document.head.appendChild(imported);
 var pos = {};
 var crimes = {};
 getCrimes();
+var map = {};
 
 function myMap() {
   var directionsService = new google.maps.DirectionsService;
@@ -15,7 +16,7 @@ function myMap() {
   var mapCanvas = document.getElementById("map");
   var myCenter=new google.maps.LatLng(38.02768,-78.48915);
   var mapOptions = {center: myCenter, zoom: 20};
-  var map = new google.maps.Map(mapCanvas, mapOptions);
+  map = new google.maps.Map(mapCanvas, mapOptions);
 
   var lat = "";
   var lng = "";
@@ -71,15 +72,36 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, start, e
         directionsService.route({
           origin: start,
           destination: end,
-          travelMode: 'WALKING'
+          travelMode: 'WALKING',
+          provideRouteAlternatives: true
         }, function(response, status) {
           if (status === 'OK') {
             console.log("it worked");
-            directionsDisplay.setDirections(response);
+
+            for(var i = 0; i < response.routes.length; i++) {
+              new google.maps.DirectionsRenderer({
+                map: map,
+                directions: response,
+                routeIndex: i
+              });
+              if(i == 0) {
+              getRouteSafety(response.routes[i]);
+              }
+              //directionsDisplay.setDirections(response);
+            }
+            //directionsDisplay.setDirections(response);
           } else {
             window.alert('Directions request failed due to ' + status);
           }
    });
+}
+
+function getRouteSafety(routeArray) {
+  console.log(routeArray);
+  for(var i = 0; i < routeArray.overview_path.length; i++) {
+    console.log(routeArray.overview_path[i].lat() + " " + routeArray.overview_path[i].lng());
+  }
+
 }
 
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
