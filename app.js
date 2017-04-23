@@ -94,14 +94,31 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, start, e
           provideRouteAlternatives: true
         }, function(response, status) {
           if (status === 'OK') {
-
             for(var i = 0; i < response.routes.length; i++) {
+              var safety = getRouteSafety(response.routes[i]);
+              var red = 'ff';
+              var green = '00';
+              var blue = '00';
+              if (safety <= 2000) { // default color is most dangerous
+                if (safety >= 1000) {
+                  var redNumber = Math.floor(265*(safety-1000)/1000);
+                  var greenNumber = 128 + Math.floor(37*(safety-1000)/1000);
+                  red = '' + redNumber.toString(16); // convert to hex
+                  green = '' + greenNumber.toString(16); // convert to hex
+                } else {
+                  var greenNumber = 165 - Math.floor(165*(safety/1000));
+                  green = '' + greenNumber.toString(16); // convert to hex
+                }
+              }
+              var color = "#" + red + green + blue;
               new google.maps.DirectionsRenderer({
                 map: map,
                 directions: response,
-                routeIndex: i
+                routeIndex: i,
+                polylineOptions: {
+                  strokeColor: color
+                }
               });
-              console.log(getRouteSafety(response.routes[i]));
             }
           } else {
             window.alert('Directions request failed due to ' + status);
