@@ -137,7 +137,7 @@ function dangerMarker(map, location, safety) {
   });
   var infowindow = new google.maps.InfoWindow({
     // display safety value as integer for better UX
-    content: '<br>Danger: ' + Math.floor(safety/100); 
+    content: '<br>Danger: ' + Math.floor(safety/100)
   });
 
   // determine color of marker using safety value
