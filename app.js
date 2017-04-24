@@ -1,9 +1,9 @@
+// inject Google Maps API into html file
 var imported = document.createElement('script');
-
 imported.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyATStvJFHPadqlOozhMkFTykKpMSdpzlns';
-
 document.head.appendChild(imported);
 
+// global variables
 var pos = {};
 var crimes = {};
 getCrimes();
@@ -11,6 +11,7 @@ var map = {};
 var markers = [];
 
 
+// myMap uses Google Maps API to render an interactive map 
 function myMap() {
   var directionsService = new google.maps.DirectionsService;
   var directionsDisplay = new google.maps.DirectionsRenderer;
@@ -57,12 +58,26 @@ function myMap() {
     // Browser doesn't support Geolocation
     handleLocationError(false, infoWindow, map.getCenter());
   }
-  //var testDest=new google.maps.LatLng(38.02768,-78.48915);
-  //calculateAndDisplayRoute(directionsService, directionsDisplay, startHere, endHere);
-  //findPath(pos, testDest);
 }
 
+
+// called when user input location has error
+function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+  infoWindow.setPosition(pos);
+  infoWindow.setContent(browserHasGeolocation ?
+                        'Error: The Geolocation service failed.' :
+                        'Error: Your browser doesn\'t support geolocation.');
+  infoWindow.open(map);
+}   
+
+
+// placeMarker places a location marker on the map and displays latitude/longitude values as well 
+// as a danger index value. This function is called on click for any point on the interactive map
+// param: map (Google Maps API map)
+// param: location (Google Maps API LatLng object)
 function placeMarker(map, location) {
+
+  // clear previous markers
   for(var i=0; i<markers.length; i++){
         markers[i].setMap(null);
     }
@@ -71,9 +86,14 @@ function placeMarker(map, location) {
     "lat" : location.lat(),
     "lng" : location.lng()
   });
+  
+  // display integer value to improve UX
   danger = Math.floor(danger);
+  
   var dangerString = "";
   var markerString = "";
+  
+  // color of displayed danger index determined by level of danger
   if (danger < 10) { 
     dangerString = "<b><br><br>Risk: " + "<p style='color:green;'>" + danger + "</p></b>";
     markerString = "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
@@ -86,12 +106,16 @@ function placeMarker(map, location) {
     dangerString = "<b><br>Risk: " + "<p style='color:red;'>" + danger + "</p></b>";
     markerString = "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
   }
+
+  // display marker
   var marker = new google.maps.Marker({
     position: location,
     map: map,
     icon: markerString
   });
   markers.push(marker);
+
+  // display information box
   var infowindow = new google.maps.InfoWindow({
     maxWidth: 200,
     content: 'Latitude: ' + location.lat() + '<br>Longitude: ' + location.lng() + dangerString 
@@ -100,14 +124,23 @@ function placeMarker(map, location) {
   infowindow.open(map,marker);
 }
 
+
+// dangerMarker displays the danger value for a given route. This method is called when routes
+// are created and displayed.
+// param: map (Google Maps API map)
+// param: location (Google Maps API LatLng object)
+// param: safety (number: safety index returned by getRouteSafety)
 function dangerMarker(map, location, safety) {
   var marker = new google.maps.Marker({
     position: location,
     map: map
   });
   var infowindow = new google.maps.InfoWindow({
-    content: '<br>Danger: ' + Math.floor(safety/100)
+    // display safety value as integer for better UX
+    content: '<br>Danger: ' + Math.floor(safety/100); 
   });
+
+  // determine color of marker using safety value
   if(Math.floor(safety) < 1000) {
     marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png')
   } else if (Math.floor(safety) < 2000 && Math.floor(safety) > 1000) {
@@ -119,14 +152,23 @@ function dangerMarker(map, location, safety) {
 }
 
 
+// Given a two locations, calculateAndDisplayRoute calculates possible walking routes to get from
+// one location to the other. The method gets danger values for each route and displays them on the
+// interactive map with information regarding safety.
+// param: directionsService (Google Maps API DirectionsService object)
+// param: directionsDisplay (Google Maps API DirectionsDisplay object)
+// param: start (Google Maps API LatLng object: starting location for the route)
+// param: endt (Google Maps API LatLng object: ending location for the route)
 function calculateAndDisplayRoute(directionsService, directionsDisplay, start, end) {
+        // get routes from Google Maps
         directionsService.route({
           origin: start,
           destination: end,
           travelMode: 'WALKING',
           provideRouteAlternatives: true
-        }, function(response, status) {
+        }, function(response, status) { // calculate and display danger values inside callback
           if (status === 'OK') {
+            // determine color of route on gradient scale using safety rating
             for(var i = 0; i < response.routes.length; i++) {
               var safety = getRouteSafety(response.routes[i]);
               var red = 'ff';
@@ -144,6 +186,7 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, start, e
                 }
               }
               var color = "#" + red + green + blue;
+              // display route on interactive map
               new google.maps.DirectionsRenderer({
                 map: map,
                 directions: response,
@@ -152,6 +195,7 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, start, e
                   strokeColor: color
                 }
               });
+              // display marker with route
               dangerMarker(map,response.routes[i].overview_path[20], getRouteSafety(response.routes[i]));
             }
           } else {
@@ -160,6 +204,10 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, start, e
    });
 }
 
+
+// getRouteSafety takes in a route and returns the safety value for that route
+// param: routeArray (Array of Google Maps API LatLng objects)
+// return: rating (number)
 function getRouteSafety(routeArray) {
   var rating = 0.0;
   for(var i = 0; i < routeArray.overview_path.length; i+=3) {
@@ -174,14 +222,8 @@ function getRouteSafety(routeArray) {
   return rating;
 }
 
-function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-  infoWindow.setPosition(pos);
-  infoWindow.setContent(browserHasGeolocation ?
-                        'Error: The Geolocation service failed.' :
-                        'Error: Your browser doesn\'t support geolocation.');
-  infoWindow.open(map);
-}   
 
+// getCrimes pulls the crime data from the database and stores it globally when the page is loaded 
 function getCrimes() {
   $.ajax({ 
     type: 'GET', 
@@ -194,15 +236,21 @@ function getCrimes() {
   });
 }
 
+
+// getPointSafety takes in a point and returns its safety rating
+// param: point (Object with 'lat' and 'lng' keys)
+// return: rating (number)
 function getPointSafety(point) { // expect LatLong value
   var rating = 0.0;
   var pLat = point['lat']; 
   var pLng = point['lng'];
 
-  // data is initially sorted by longitude value
+  // data is initially sorted by longitude value. use findStartIndex to figure out what index of 'crimes'
+  // array to start iteration. (Prevents unnecessary iterations through crimes > .023 longitude from the give point.
   var i = findStartIndex(pLng - .023);
   for ( ; i < Object.keys(crimes).length && crimes[Object.keys(crimes)[i]].longitude < pLng + 0.023 ; i++) {
     var lat2 = crimes[Object.keys(crimes)[i]].latitude;  
+    // factors crime into safety rating if both latitude and longitude are within .023 degrees
     if (Math.abs(lat2 - pLat) < 0.023) {
       var d = distance(pLat, pLng, lat2, crimes[Object.keys(crimes)[i]].longitude)
       if (d < .04) {
@@ -212,8 +260,8 @@ function getPointSafety(point) { // expect LatLong value
     }
   }
 
-// Brute force algorithm:
-/*  for (var i = 0; i < Object.keys(crimes).length; i++) {
+/*  Brute force algorithm:
+    for (var i = 0; i < Object.keys(crimes).length; i++) {
     var crime = crimes[Object.keys(crimes)[i]];
     var d = distance(pLat, pLng, crime['latitude'], crime['longitude']);    
     if (d < 2.0) {
@@ -222,11 +270,14 @@ function getPointSafety(point) { // expect LatLong value
       }
       rating += d;
     }
-  }*/
+  }
+*/
+
   return rating;
 }
 
-//binary search, takes in lattitude, and returns the start index of data that should be used
+
+// binary search, takes in lattitude, and returns the start index of data that should be used
 function findStartIndex(l) {
   var keys = Object.keys(crimes);
   var high = keys.length - 1;
@@ -242,7 +293,12 @@ function findStartIndex(l) {
   return mid;
 }
 
-// Returns difference in location (miles)
+// distance returns difference in location (miles) for two points
+// param: lat1 (number) 
+// param: lon1 (number) 
+// param: lat2 (number) 
+// param: lat2 (number) 
+// return: dist (number)
 function distance(lat1, lon1, lat2, lon2) {
 	var radlat1 = Math.PI * lat1/180;
 	var radlat2 = Math.PI * lat2/180;
