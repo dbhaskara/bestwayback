@@ -1,3 +1,8 @@
+# This file populates  our Firebase database with government-reported violent crime data.
+# The Python script removes incomplete and unnecessary data and sorts the data by longitude 
+# value for optimal calculations in the .js file
+
+
 import json
 from pprint import pprint
 import pyrebase
